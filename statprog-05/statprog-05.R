@@ -13,6 +13,7 @@
 # can you think about a region where 𝔼[𝑌 ] is likely to be?
 #   For example, the random variable obtained after transforming with the function 𝑠𝑖𝑛 a binomial
 # distribution.
+
 library(tidyverse)
 
 set.seed(1)

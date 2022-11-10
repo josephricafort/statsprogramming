@@ -1,0 +1,16 @@
+---
+title: "diamond-activity"
+output: html_document
+date: '2022-11-04'
+---
+2 weeks deadline
+Submit by November 18 to marc.comas@udg.edu
+
+install.packages("diamonds")
+library(diamonds)
+
+## R Markdown
+
+```{r cars}
+summary(diamonds)
+```

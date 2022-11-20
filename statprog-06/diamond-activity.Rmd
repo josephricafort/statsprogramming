@@ -1,16 +1,119 @@
 ---
-title: "diamond-activity"
-output: html_document
-date: '2022-11-04'
+title: "Assignment 5: Diamonds Activity"
+output: html_notebook
 ---
-2 weeks deadline
-Submit by November 18 to marc.comas@udg.edu
+Submitted by: Joseph Ricafort
 
-install.packages("diamonds")
-library(diamonds)
+## Assignment briefing
 
-## R Markdown
+Explain the price’s of the diamonds using information from the other variables. What are the more relevant variables to explain the price?
+```{r}
+#> # A tibble: 53,940 × 10
+#>    carat cut       color clarity depth table price     x     y     z
+#>    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+#>  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+#>  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+#>  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+#>  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+#>  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+#>  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+#>  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+#>  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+#>  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+#> 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39
+#> # … with 53,930 more rows
+```
 
-```{r cars}
+- `diamonds` is a well-known dataset and analyzed on many websites through the internet. You can borrow ideas from there.
+- If you want, you can use either `quarto` or `Rmarkdown` to generate your document.
+
+### Answer to assignment starts here
+
+There is a description about the diamonds dataset from
+[bookdown.org](https://bookdown.org/yih_huynh/Guide-to-R-Book/diamonds.html)
+
+
+## Exploring the dataset
+Diamonds dataset will be available once we added tidyverse library
+
+```{r}
+library(tidyverse)
+
+as_tibble(diamonds)
+```
+
+We can see that cut, color and clarity are ordinal variables while the rest except for the price are numeric values
+
+
+```{r}
 summary(diamonds)
+```
+Looking at summary on the summation and the extent of values for every variable
+
+## Defining exploration questions
+
+What are the most interesting questions to ask the dataset:
+
+1. How is the price of the diamond defined by its characteristics? 
+
+- Are heavier diamonds (number of carats) more expensive? 
+- Does quality of the diamond defines it price?
+- Are there colors that are more expensive than the other?
+- Are bigger diamonds more expensive?
+
+2. Can we define the relationship between the diamonds' characteristics in terms of which of them more (or less) defines the price of the diamond?
+
+The questions above may or may not guarantee to be answered by the dataset
+
+
+### Restructure the dataset
+
+I'll group the characteristics accordingly to which they are more related to each other:
+
+- **Numerical** - carat (weight), x, y, z (Physical attributes)
+- **Ordinal** - color, clarity, cut (Visual attributes)
+
+
+## Visualize
+
+**The number of carats is the most relevant in terms of the price of the diamond**
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point(alpha = 0.05) +
+  geom_smooth()
+```
+
+**Distribution of the diamond observations across the prices range**
+Most of the observations lies at the lower price range of the dataset
+```{r}
+ggplot(diamonds, aes(x = price)) +
+  geom_histogram(binwidth = 500, alpha = 0.75)
+```
+
+### Exploring other variables
+
+**A higher quality of cut may not guarantee a higher price**
+
+We have to take note as well that the observations between the quality of cuts are not evenly distributed
+```{r}
+ggplot(diamonds, aes(x = cut, y = price)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter(alpha = 0.01) +
+  scale_y_log10()
+```
+
+**Given that colored D to J diamonds were sequenced from best to worst, we can say that the best colored diamonds again aren not the most expensive**
+```{r}
+ggplot(diamonds, aes(x = color, y = price)) +
+  geom_jitter(alpha = 0.01) +
+  geom_boxplot(alpha = 0.5) +
+  scale_y_log10()
+```
+
+Sequenced from I1 (best) to IF (worst), SI2 (second best) has the highest mean value price
+```{r}
+ggplot(diamonds, aes(x = clarity, y = price)) +
+  geom_jitter(alpha = 0.01) +
+  geom_boxplot(alpha = 0.5) +
+  scale_y_log10()
 ```

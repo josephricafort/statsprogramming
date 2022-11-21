@@ -6,7 +6,7 @@
 # load("d:/karina/docencia/sreferenciesppt/16.AssociatiusVisualitzacio/MultivariateAnalysis/PracticaR/credscok_bin")
 # setwd("D:/karina/docencia/01areferenciesPPT/0DadesPractiques/CREDSCO")
 setwd("C:/Users/Joseph/Documents/Codes/2022/mvtec-2022/statsprogramming/statsprog-07")
-dd <- read.table("data/credscoClean.csv",header=T, sep=";");
+dd <- read.table("data/Coffee.csv",header=T, sep=",", stringsAsFactors = FALSE);
 
 
 

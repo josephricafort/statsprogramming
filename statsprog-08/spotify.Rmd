@@ -1,0 +1,420 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+Importing Coffee chains data and
+Descriptive Statistics
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(lubridate)
+```
+
+## Importing the data
+
+```{r}
+setwd("~/Documents/class/stats-programming/week-7")
+data <- read.csv("dataset.csv") %>% clean_names() %>%
+  mutate(mode = str_replace(as.character(mode), "0", "minor"),
+         mode = str_replace(as.character(mode), "1", "major"),
+         time_signature = as.character(time_signature) ) %>% 
+  select(-1)
+
+str_replace
+
+         
+dataset<-data
+dd <- data
+
+names(data)
+
+#data_full <- data %>% mutate(
+                #cogs_proportion = cogs/sales,
+                #inventory_proportion = inventory/sales,
+                #margin_proportion = margin/sales,
+                #marketing_proportion = marketing/sales,
+                #profit_proportion = profit/sales,
+                #expense_proportion = total_expenses/sales,
+                #area_code = as.character(area_code),
+                #date = as.Date(date, origin = "1899-12-30")
+               # ) %>% filter(date == "2013-12-01") %>% 
+  #select(1:9, 14:20)
+    
+```
+
+Note, the data covers monthly reports from Jan 2012 to Dec 2013.
+In order to do PCA, maybe we can filter to just one month's worth of data.
+
+```{r}
+#data_for_pca_analysis <- data_full %>%
+# select(1:9, 19, 21:26) %>%
+ # filter(date == "2013-12-01")
+
+#data_for_pca_analysis
+```
+
+```{r}
+
+dim(dd)
+n<-dim(dd)[1]
+K<-dim(dd)[2]
+
+descriptiva<-function(X, nom){
+  if (!(is.numeric(X) || class(X)=="Date")){ 
+    frecs<-table(as.factor(X), useNA="ifany")
+    proportions<-frecs/n
+    #ojo, decidir si calcular porcentages con o sin missing values
+    pie(frecs, cex=0.6, main=paste("Pie of", nom))
+    barplot(frecs, las=3, cex.names=0.7, main=paste("Barplot of", nom), col=listOfColors)
+    print(paste("Number of modalities: ", length(frecs)))
+    print("Frequency table")
+    print(frecs)
+    print("Relative frequency table (proportions)")
+    print(proportions)
+    print("Frequency table sorted")
+    print(sort(frecs, decreasing=TRUE))
+    print("Relative frequency table (proportions) sorted")
+    print(sort(proportions, decreasing=TRUE))
+   }else{
+     if(class(X)=="Date"){
+       print(summary(X))
+       print(sd(X))
+       #decide breaks: weeks, months, quarters...
+       hist(X,breaks="weeks")
+     }else{
+       hist(X, main=paste("Histogram of", nom))
+       boxplot(X, horizontal=TRUE, main=paste("Boxplot of",nom))
+       print("Extended Summary Statistics")
+       print(summary(X))
+       print(paste("sd: ", sd(X, na.rm=TRUE)))
+       print(paste("vc: ", sd(X, na.rm=TRUE)/mean(X, na.rm=TRUE)))
+      }
+   }
+}
+
+actives<-c(1:K)
+colDate<-1
+#if (dataset=="platjaDaro")
+#  {dd[,colDate]<-as.Date(dd[, colDate], format="%d/%m/%y %h:%m:%s")
+#   actives<-c(3:44)
+#}
+
+listOfColors<-rainbow(39)
+
+par(ask=TRUE)
+
+for(k in actives){
+  print(paste("variable ", k, ":", names(dd)[k] ))
+  descriptiva(dd[,k], names(dd)[k])
+}
+par(ask=FALSE)
+```
+
+# Principal component Analysis
+
+```{r}
+objects()
+attributes(dd)
+
+attach(dd)
+names(dd)
+
+sapply(dd,class)
+
+numerical<-which(sapply(dd,is.numeric))
+numerical
+
+dcon<-dd[,numerical]
+sapply(dcon,class)
+
+# PRINCIPAL COMPONENT ANALYSIS OF dcon
+
+pc1 <- prcomp(dcon, scale=TRUE, center = TRUE)
+class(pc1)
+attributes(pc1)
+
+print(pc1)
+
+pc1
+
+str(pc1)
+
+```
+
+```{r}
+plot(pc1, main = "") 
+```
+
+
+```{r}
+# WHICH PERCENTAGE OF THE TOTAL INERTIA IS REPRESENTED IN SUBSPACES?
+
+pc1$sdev
+inerProj<- pc1$sdev^2 
+inerProj
+totalIner<- sum(inerProj)
+totalIner
+pinerEix<- 100*inerProj/totalIner
+pinerEix
+barplot(pinerEix)
+
+#Cummulated Inertia in subspaces, from first principal component to the 11th dimension subspace
+barplot(100*cumsum(pc1$sdev[1:dim(dcon)[2]]^2)/dim(dcon)[2])
+percInerAccum<-100*cumsum(pc1$sdev[1:dim(dcon)[2]]^2)/dim(dcon)[2]
+percInerAccum
+```
+
+```{r}
+# SELECTION OF THE SINGIFICNT DIMENSIONS (keep 80% of total inertia)
+
+nd = 10
+
+print(pc1)
+attributes(pc1)
+pc1$rotation
+
+# STORAGE OF THE EIGENVALUES, EIGENVECTORS AND PROJECTIONS IN THE nd DIMENSIONS
+View(pc1$x)
+dim(pc1$x)
+dim(dcon)
+dcon[100,]
+pc1$x[100,]
+
+Psi = pc1$x[,1:nd]
+dim(Psi)
+Psi[100,]
+
+# STORAGE OF LABELS FOR INDIVIDUALS AND VARIABLES
+
+iden = row.names(dcon)
+etiq = names(dcon) # getting names of numerical variables
+ze = rep(0,length(etiq)) # WE WILL NEED THIS VECTOR AFTERWARDS FOR THE GRAPHICS
+
+names(dcon)
+# PLOT OF INDIVIDUALS
+
+#select your axis
+#eje1<-2
+eje1<-1
+#eje2<-3
+eje2<-2
+
+
+plot(Psi[,eje1],Psi[,eje2])
+text(Psi[,eje1],Psi[,eje2],labels=iden, cex=0.5)
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+
+
+plot(Psi[,eje1],Psi[,eje2], type="n")
+text(Psi[,eje1],Psi[,eje2],labels=iden, cex=0.5)
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+#library(rgl)
+#plot3d(Psi[,1],Psi[,2],Psi[,3])
+```
+
+```{r}
+
+#Projection of variables
+
+Phi = cor(dcon,Psi)
+Phi
+
+X<-Phi[,eje1]
+Y<-Phi[,eje2]
+
+plot(Psi[,eje1],Psi[,eje2],type="n")
+axis(side=1, pos= 0, labels = F)
+axis(side=3, pos= 0, labels = F)
+axis(side=2, pos= 0, labels = F)
+axis(side=4, pos= 0, labels = F)
+arrows(ze, ze, X, Y, length = 0.07,col="blue")
+text(X,Y,labels=etiq,col="darkblue", cex=0.7)
+
+#zooms
+plot(Psi[,eje1],Psi[,eje2],type="n",xlim=c(min(X,0),max(X,0)), ylim=c(-1,1))
+axis(side=1, pos= 0, labels = F)
+axis(side=3, pos= 0, labels = F)
+axis(side=2, pos= 0, labels = F)
+axis(side=4, pos= 0, labels = F)
+arrows(ze, ze, X, Y, length = 0.07,col="blue")
+text(X,Y,labels=etiq,col="darkblue", cex=0.7)
+
+
+```
+Trying to plot based on genre
+
+```{r}
+varcat=factor(dd[,21])
+plot(Psi[,1],Psi[,2],col=varcat)
+axis(side=1, pos= 0, labels = F, col="darkgray")
+axis(side=3, pos= 0, labels = F, col="darkgray")
+axis(side=2, pos= 0, labels = F, col="darkgray")
+axis(side=4, pos= 0, labels = F, col="darkgray")
+legend("bottomleft",levels(factor(varcat)),pch=1,col=c(1:114), cex=0.6)
+```
+
+Trying to plot based on explicitness
+
+```{r}
+varcat=factor(dd[,8])
+plot(Psi[,1],Psi[,2],col=varcat)
+axis(side=1, pos= 0, labels = F, col="darkgray")
+axis(side=3, pos= 0, labels = F, col="darkgray")
+axis(side=2, pos= 0, labels = F, col="darkgray")
+axis(side=4, pos= 0, labels = F, col="darkgray")
+legend("bottomleft",levels(factor(varcat)),pch=1,col=c(1,2,3,4), cex=0.6)
+```
+
+Plotting based on major/minor
+```{r}
+varcat=factor(dd[,12])
+plot(Psi[,1],Psi[,2],col=varcat)
+axis(side=1, pos= 0, labels = F, col="darkgray")
+axis(side=3, pos= 0, labels = F, col="darkgray")
+axis(side=2, pos= 0, labels = F, col="darkgray")
+axis(side=4, pos= 0, labels = F, col="darkgray")
+legend("bottomleft",levels(factor(varcat)),pch=1,col=c(1,2,3,4), cex=0.6)
+```
+
+
+```{r}
+plot(Psi[,eje1],Psi[,eje2],type="n",xlim=c(-1,1), ylim=c(-3,1))
+#plot(X,Y,type="none",xlim=c(min(X,0),max(X,0)))
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+
+arrows(ze, ze, X, Y, length = 0.07,col="lightgray")
+text(X,Y,labels=etiq,col="gray", cex=0.7)
+
+#all qualitative together
+plot(Psi[,eje1],Psi[,eje2],type="n")
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+
+#nominal qualitative variables
+
+dcat<-c(3, 4, 5, 6, 7, 8, 9)
+
+c<-1
+for(k in dcat){
+  seguentColor<-colors[c]
+  
+  fdic1 = tapply(Psi[,eje1],dd[,k],mean)
+  fdic2 = tapply(Psi[,eje2],dd[,k],mean) 
+  
+  points(fdic1,fdic2,pch=16,col=seguentColor, labels=levels(dd[,k]))
+  text(fdic1,fdic2,col=seguentColor, cex=0.6)
+  c<-c+1
+}
+legend("bottomleft",names(dd)[dcat],pch=1,col=colors, cex=0.6)
+
+
+dordi<-c(8)
+
+
+levels(factor(dd[,dordi[1]]))
+#reorder modalities: when required
+dd[,dordi[1]] <- factor(dd[,dordi[1]], ordered=TRUE,  levels= c("WorkingTypeUnknown","altres sit","temporal","fixe","autonom"))
+levels(dd[,dordi[1]])
+
+c<-1
+col<-1
+for(k in dordi){
+  seguentColor<-colors[col]
+  fdic1 = tapply(Psi[,eje1],dd[,k],mean)
+  fdic2 = tapply(Psi[,eje2],dd[,k],mean) 
+  
+  #points(fdic1,fdic2,pch=16,col=seguentColor, labels=levels(dd[,k]))
+  #connect modalities of qualitative variables
+  lines(fdic1,fdic2,pch=16,col=seguentColor)
+ text(fdic1,fdic2,labels=levels(dd[,k]),col=seguentColor, cex=0.6)
+  c<-c+1
+  col<-col+1
+}
+legend("topleft",names(dd)[dordi],pch=1,col=colors[1:length(dordi)], cex=0.6)
+
+```
+The following code is to identify clusters in the pca
+
+```{r}
+
+colors<-c("red", "blue", "darkgreen", "orange", "violet", "magenta", "pink")
+
+#represent numerical variables in background
+plot(Psi[,eje1],Psi[,eje2],type="n",xlim=c(-1,1), ylim=c(-3,1))
+#plot(X,Y,type="none",xlim=c(min(X,0),max(X,0)))
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+
+#add projections of numerical variables in background
+arrows(ze, ze, X, Y, length = 0.07,col="lightgray")
+text(X,Y,labels=etiq,col="gray", cex=0.7)
+
+#add centroids
+c<-1
+for(k in dcat){
+  seguentColor<-colors[c]
+  
+  fdic1 = tapply(Psi[,eje1],dd[,k],mean)
+  fdic2 = tapply(Psi[,eje2],dd[,k],mean) 
+  
+  #points(fdic1,fdic2,pch=16,col=seguentColor, labels=levels(dd[,k]))
+  text(fdic1,fdic2,col=seguentColor, cex=0.6)
+  c<-c+1
+}
+legend("bottomleft",names(dd)[dcat],pch=19,col=colors, cex=0.6)
+
+
+#add ordinal qualitative variables. Ensure ordering is the correct
+
+dordi<-c(8)
+
+
+levels(factor(dd[,dordi[1]]))
+#reorder modalities: when required
+dd[,dordi[1]] <- factor(dd[,dordi[1]], ordered=TRUE,  levels= c("WorkingTypeUnknown","altres sit","temporal","fixe","autonom"))
+levels(dd[,dordi[1]])
+
+c<-1
+col<-length(dcat)+1
+for(k in dordi){
+  seguentColor<-colors[col]
+  fdic1 = tapply(Psi[,eje1],dd[,k],mean)
+  fdic2 = tapply(Psi[,eje2],dd[,k],mean) 
+  
+  #points(fdic1,fdic2,pch=16,col=seguentColor, labels=levels(dd[,k]))
+  #connect modalities of qualitative variables 
+  lines(fdic1,fdic2,pch=16,col=seguentColor)
+  text(fdic1,fdic2,labels=levels(dd[,k]),col=seguentColor, cex=0.6)
+  c<-c+1
+  col<-col+1
+}
+legend("topleft",names(dd)[dordi],pch=19,col=colors[col:col+length(dordi)-1], cex=0.6)
+
+
+#Make two complementary factorial maps
+
+colors<-c("red", "blue", "darkgreen", "orange", "violet", "magenta", "pink")
+
+#represent numerical variables in background
+#plot(Psi[,eje1],Psi[,eje2],type="p",xlim=c(-1,1), ylim=c(-3,1), col="lightgray")
+plot(Psi[,eje1],Psi[,eje2],type="n",xlim=c(-1,1), ylim=c(-3,1))
+#plot(X,Y,type="none",xlim=c(min(X,0),max(X,0)))
+axis(side=1, pos= 0, labels = F, col="cyan")
+axis(side=3, pos= 0, labels = F, col="cyan")
+axis(side=2, pos= 0, labels = F, col="cyan")
+axis(side=4, pos= 0, labels = F, col="cyan")
+R...

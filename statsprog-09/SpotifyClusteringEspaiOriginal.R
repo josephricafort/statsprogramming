@@ -149,20 +149,27 @@ plot(cdg[,1], cdg[,7])
 # LETS SEE THE PARTITION VISUALLY
 
 
-plot(Edad,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+# plot(Edad,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+plot(popularity ,duration_ms ,col=c1,main="Clustering of credit data in 3 classes")
 legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3))
 
 
-
-plot(RatiFin,Estalvi)
-plot(RatiFin,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+# plot(RatiFin,Estalvi)
+# plot(RatiFin,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+plot(danceability, popularity)
+plot(danceability, popularity,col=c1,main="Clustering of credit data in 3 classes")
 legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
 
-plot(Antiguedad.Trabajo,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+# plot(Antiguedad.Trabajo,Estalvi,col=c1,main="Clustering of credit data in 3 classes")
+# legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
+# plot(Patrimonio, Ingresos,col=c1,main="Clustering of credit data in 3 classes")
+# legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
+# plot(Patrimonio, Antiguedad.Trabajo,col=c1,main="Clustering of credit data in 3 classes")
+plot(key, popularity, col=c1,main="Clustering of credit data in 3 classes")
 legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
-plot(Patrimonio, Ingresos,col=c1,main="Clustering of credit data in 3 classes")
+plot(loudness, speechiness,col=c1,main="Clustering of credit data in 3 classes")
 legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
-plot(Patrimonio, Antiguedad.Trabajo,col=c1,main="Clustering of credit data in 3 classes")
+plot(loudness, acousticness,col=c1,main="Clustering of credit data in 3 classes")
 legend("topright",c("class1","class2","class3"),pch=1,col=c(1:3), cex=0.6)
 
 pairs(dcon[,1:7], col=c1)
@@ -225,13 +232,14 @@ boxplot(dd[,9]~c2, horizontal=TRUE)
 
 pairs(dcon[,1:7], col=c2)
 
-plot(RatiFin,Estalvi,col=c2,main="Clustering of credit data in 3 classes")
+plot(popularity,danceability,col=c2,main="Clustering of credit data in 3 classes")
 legend("topright",levels(c2),pch=1,col=c(1:4), cex=0.6)
 
 cdg <- aggregate(as.data.frame(dcon),list(c2),mean)
 cdg
 
-plot(Edad, Gastos, col= c2)
+# plot(Edad, Gastos, col= c2)
+plot(popularity, duration_ms, col= c2)
 points(cdg[,4],cdg[,5],pch=16,col="orange")
 text(cdg[,4],cdg[,5], labels=cdg[,1], pos=2, font=2, cex=0.7, col="orange")
 
